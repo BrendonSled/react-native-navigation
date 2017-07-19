@@ -81,6 +81,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             createModalController();
             createLayout();
         }
+        NavigationApplication.instance.setRestartingApp(false);
     }
 
     private void setOrientation() {
@@ -107,7 +108,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     private boolean hasBackgroundColor() {
         return AppStyle.appStyle.screenBackgroundColor != null &&
-               AppStyle.appStyle.screenBackgroundColor.hasColor();
+                AppStyle.appStyle.screenBackgroundColor.hasColor();
     }
 
     @Override
