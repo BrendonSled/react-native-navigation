@@ -1,6 +1,7 @@
 package com.reactnativenavigation.controllers;
 
 import android.annotation.TargetApi;
+import android.content.ComponentCallbacks2;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import com.facebook.react.bridge.Callback;
@@ -61,27 +63,27 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         activityParams = NavigationCommandsHandler.parseActivityParams(getIntent());
-        NavigationApplication.instance.getActivityCallbacks().onActivityCreated(this, savedInstanceState);
+        disableActivityShowAnimationIfNeeded();
+        setOrientation();
+        createModalController();
+        createLayout();
 
-        if (!NavigationApplication.instance.isReactContextInitialized()) {
-            NavigationApplication.instance.setRunAfterReactContextInitialized(new Runnable() {
-                @Override
-                public void run() {
-                    disableActivityShowAnimationIfNeeded();
-                    setOrientation();
-                    createModalController();
-                    createLayout();
-                }
-            });
-            NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
-            return;
-        } else {
-            disableActivityShowAnimationIfNeeded();
-            setOrientation();
-            createModalController();
-            createLayout();
+        NavigationApplication.instance.getActivityCallbacks().onActivityCreated(this, savedInstanceState);
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        switch (level) {
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:
+                destroyLayouts();
+                getReactGateway().onDestroyApp(this);
+                NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
+                Log.w("ReactNativeNavigation", "Cleaned up activity");
+                break;
         }
-        NavigationApplication.instance.setRestartingApp(false);
+
+        Log.w("ReactNativeNavigation", "Memory level: " + level);
     }
 
     private void setOrientation() {
@@ -115,21 +117,49 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onStart() {
         super.onStart();
         NavigationApplication.instance.getActivityCallbacks().onActivityStarted(this);
+
+        runCodeWhenReactContextInitialized(new Runnable() {
+            @Override
+            public void run() {
+                Log.w("ReactNative", "Ran start");
+                NavigationApplication.instance.setRestartingApp(false);
+            }
+        });
+
+        if (!NavigationApplication.instance.isReactContextInitialized()) {
+            NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
+        }
+    }
+
+    private void runCodeWhenReactContextInitialized(Runnable runnable) {
+        if (!NavigationApplication.instance.isReactContextInitialized()) {
+            Log.w("ReactNative", "Starting up react");
+            NavigationApplication.instance.addRunAfterReactContextInitialized(runnable);
+        } else {
+            Log.w("ReactNative", "React running");
+            runnable.run();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (isFinishing() || !NavigationApplication.instance.isReactContextInitialized()) {
+        if (isFinishing()) {
             return;
         }
 
         currentActivity = this;
-        IntentDataHandler.onResume(getIntent());
-        getReactGateway().onResumeActivity(this, this);
-        NavigationApplication.instance.getActivityCallbacks().onActivityResumed(this);
-        EventBus.instance.register(this);
-        IntentDataHandler.onPostResume(getIntent());
+        runCodeWhenReactContextInitialized(new Runnable() {
+            @Override
+            public void run() {
+                Log.w("ReactNative", "Ran resume");
+                IntentDataHandler.onResume(getIntent());
+                getReactGateway().onResumeActivity(NavigationActivity.this, NavigationActivity.this);
+                NavigationApplication.instance.getActivityCallbacks().onActivityResumed(NavigationActivity.this);
+                EventBus.instance.register(NavigationActivity.this);
+                IntentDataHandler.onPostResume(getIntent());
+            }
+        });
     }
 
     @Override

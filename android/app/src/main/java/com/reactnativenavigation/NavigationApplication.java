@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.util.Log;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -15,7 +16,9 @@ import com.reactnativenavigation.controllers.ActivityCallbacks;
 import com.reactnativenavigation.react.NavigationReactGateway;
 import com.reactnativenavigation.react.ReactGateway;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public abstract class NavigationApplication extends Application implements ReactApplication {
 
@@ -25,8 +28,7 @@ public abstract class NavigationApplication extends Application implements React
     private EventEmitter eventEmitter;
     private Handler handler;
     private ActivityCallbacks activityCallbacks;
-    @Nullable
-    private Runnable runAfterReactContextInitialized;
+    private Queue<Runnable> runAfterReactContextInitialized = new LinkedList<>();
     private boolean restartingApp = false;
 
     @Override
@@ -85,8 +87,9 @@ public abstract class NavigationApplication extends Application implements React
         return restartingApp;
     }
 
-    public void setRunAfterReactContextInitialized(@Nullable Runnable runAfterReactContextInitialized) {
-        this.runAfterReactContextInitialized = runAfterReactContextInitialized;
+    public void addRunAfterReactContextInitialized(@Nullable Runnable runAfterReactContextInitialized) {
+        this.runAfterReactContextInitialized.add(runAfterReactContextInitialized);
+        Log.w("ReactNativeNavigation", "Adding new task to queue");
     }
 
     public boolean isReactContextInitialized() {
@@ -94,10 +97,11 @@ public abstract class NavigationApplication extends Application implements React
     }
 
     public void onReactInitialized(ReactContext reactContext) {
-        if (runAfterReactContextInitialized != null) {
-            runOnMainThread(runAfterReactContextInitialized);
-            runAfterReactContextInitialized = null;
+        while (!runAfterReactContextInitialized.isEmpty()) {
+            Log.w("ReactNativeNavigation", "Running task");
+            runOnMainThread(runAfterReactContextInitialized.remove(), 300);
         }
+        Log.w("ReactNativeNavigation", "Task list is now empty");
     }
 
     @Override
