@@ -59,6 +59,10 @@ public abstract class NavigationApplication extends Application implements React
         reactGateway.startReactContextOnceInBackgroundAndExecuteJS();
     }
 
+    public void restartReactContextOnceInBackgroundAndExecuteJS() {
+        reactGateway.restartReactContextOnceInBackgroundAndExecuteJS();
+    }
+
     public void runOnMainThread(Runnable runnable) {
         handler.post(runnable);
     }
