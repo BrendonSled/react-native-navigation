@@ -126,7 +126,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             }
         });
 
-        if (!NavigationApplication.instance.isReactContextInitialized()) {
+        if (!NavigationApplication.instance.isReactContextInitialized() && !NavigationApplication.instance.getReactGateway().hasStartedCreatingContext()) {
             NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
         }
     }
