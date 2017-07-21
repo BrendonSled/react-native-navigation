@@ -16,6 +16,8 @@ public interface ReactGateway {
 
     boolean isInitialized();
 
+    boolean hasBoundActivity();
+
     ReactContext getReactContext();
 
     NavigationReactEventEmitter getReactEventEmitter();

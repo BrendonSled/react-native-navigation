@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.react.ReactDevPermission;
+import com.reactnativenavigation.react.ReactGateway;
 
 public abstract class SplashActivity extends AppCompatActivity {
     public static boolean isResumed = false;
@@ -30,12 +31,13 @@ public abstract class SplashActivity extends AppCompatActivity {
             return;
         }
 
-        if (NavigationApplication.instance.isReactContextInitialized()) {
+        ReactGateway reactGateway = NavigationApplication.instance.getReactGateway();
+        if (reactGateway.isInitialized() && reactGateway.hasBoundActivity()) {
             finish();
-        } else if (NavigationApplication.instance.getReactGateway().hasStartedCreatingContext()) {
-            NavigationApplication.instance.restartReactContextOnceInBackgroundAndExecuteJS();
+        } else if (reactGateway.hasStartedCreatingContext()) {
+            reactGateway.restartReactContextOnceInBackgroundAndExecuteJS();
         } else {
-            NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
+            reactGateway.startReactContextOnceInBackgroundAndExecuteJS();
         }
     }
 
