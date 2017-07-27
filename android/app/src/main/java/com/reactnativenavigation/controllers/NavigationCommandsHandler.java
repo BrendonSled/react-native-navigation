@@ -30,6 +30,10 @@ public class NavigationCommandsHandler {
         return ActivityParamsParser.parse(intent.getBundleExtra(NavigationCommandsHandler.ACTIVITY_PARAMS_BUNDLE));
     }
 
+    static boolean canParseActivityParams(Intent intent) {
+        return intent.hasExtra(NavigationCommandsHandler.ACTIVITY_PARAMS_BUNDLE);
+    }
+
     /**
      * start a new activity with CLEAR_TASK | NEW_TASK
      *
