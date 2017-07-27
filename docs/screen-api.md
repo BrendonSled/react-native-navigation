@@ -116,6 +116,17 @@ Dismiss the current lightbox.
 this.props.navigator.dismissLightBox();
 ```
 
+## showInAppNotification(params = {})
+
+Show in-app notification. This generally looks like a pop-up window that can appear at the top of the screen.
+
+```js
+this.props.navigator.showInAppNotification({
+ screen: "example.InAppNotification", // unique ID registered with Navigation.registerScreen
+ passProps: {}, // simple serializable object that will pass as props to the in-app notification (optional)
+});
+```
+
 ## handleDeepLink(params = {})
 
 Trigger a deep link within the app. See [deep links](https://wix.github.io/react-native-navigation/#/deep-links) for more details about how screens can listen for deep link events.
@@ -252,7 +263,10 @@ this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
 ```
 
 # Screen Visibility
-Listen to screen visibility events in onNavigatorEvent handler:
+
+`const isVisible = await this.props.navigator.isCurrentlyVisibleScreen()`
+
+## Listen visibility events in onNavigatorEvent handler
 
 ```js
 export default class ExampleScreen extends Component {
@@ -270,6 +284,34 @@ export default class ExampleScreen extends Component {
         break;
       case 'didDisappear':
         break;
+    }
+  }
+}
+```
+
+## Listen to visibility events globally
+
+```js
+import {ScreenVisibilityListener as RNNScreenVisibilityListener} from 'react-native-navigation';
+
+export class ScreenVisibilityListener {
+
+  constructor() {
+    this.listener = new RNNScreenVisibilityListener({
+      didAppear: ({screen, startTime, endTime, commandType}) => {
+        console.log('screenVisibility', `Screen ${screen} displayed in ${endTime - startTime} millis after [${commandType}]`);
+      }
+    });
+  }
+
+  register() {
+    this.listener.register();
+  }
+
+  unregister() {
+    if (this.listener) {
+      this.listener.unregister();
+      this.listener = null;
     }
   }
 }
