@@ -19,6 +19,7 @@ import android.widget.RelativeLayout;
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.R;
 import com.reactnativenavigation.params.LightBoxParams;
+import com.reactnativenavigation.screens.NavigationType;
 import com.reactnativenavigation.screens.Screen;
 import com.reactnativenavigation.utils.ViewUtils;
 
@@ -89,14 +90,14 @@ public class LightBox extends Dialog implements DialogInterface.OnDismissListene
 
     @Override
     public void show() {
-        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("willAppear", params.navigationParams.navigatorEventId);
+        NavigationApplication.instance.getEventEmitter().sendWillAppearEvent( params, NavigationType.LightBox);
         super.show();
-        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("didAppear", params.navigationParams.navigatorEventId);
+        NavigationApplication.instance.getEventEmitter().sendDidAppearEvent(params, NavigationType.LightBox);
     }
 
     @Override
     public void hide() {
-        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("willDisappear", params.navigationParams.navigatorEventId);
+        NavigationApplication.instance.getEventEmitter().sendWillDisappearEvent(params, NavigationType.LightBox);
         animateHide();
     }
 
@@ -109,7 +110,7 @@ public class LightBox extends Dialog implements DialogInterface.OnDismissListene
         // TODO: Resolve
         //content.unmountReactView();
         dismiss();
-        NavigationApplication.instance.getEventEmitter().sendScreenChangedEvent("didDisappear", params.navigationParams.navigatorEventId);
+        NavigationApplication.instance.getEventEmitter().sendDidDisappearEvent(params, NavigationType.LightBox);
     }
 
     private void animateShow() {

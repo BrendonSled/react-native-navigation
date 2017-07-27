@@ -8,5 +8,6 @@ public enum NavigationType {
     ShowModal,
     DismissModal,
     OpenSideMenu,
-    CloseSideMenu
+    CloseSideMenu,
+    LightBox
 }
