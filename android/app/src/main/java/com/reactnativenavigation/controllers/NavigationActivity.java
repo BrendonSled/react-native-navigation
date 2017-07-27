@@ -63,7 +63,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activityParams = NavigationCommandsHandler.parseActivityParams(getIntent());
+        if (NavigationCommandsHandler.canParseActivityParams(getIntent())) {
+            activityParams = NavigationCommandsHandler.parseActivityParams(getIntent());
+        } else {
+            if (NavigationApplication.instance.isReactContextInitialized()) {
+                getReactGateway().onDestroyApp(this);
+                NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
+            }
+            NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
+            return;
+        }
         disableActivityShowAnimationIfNeeded();
         setOrientation();
         createModalController();
