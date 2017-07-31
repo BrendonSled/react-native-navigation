@@ -58,7 +58,8 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     private ActivityParams activityParams;
     private ModalController modalController;
     private Layout layout;
-    @Nullable private PermissionListener mPermissionListener;
+    @Nullable
+    private PermissionListener mPermissionListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -494,11 +495,16 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        NavigationApplication.instance.getActivityCallbacks().onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (mPermissionListener != null && mPermissionListener.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
-            mPermissionListener = null;
-        }
+    public void onRequestPermissionsResult(final int requestCode, final @NonNull String[] permissions, final @NonNull int[] grantResults) {
+        runCodeWhenReactContextInitialized(new Runnable() {
+            @Override
+            public void run() {
+                NavigationApplication.instance.getActivityCallbacks().onRequestPermissionsResult(requestCode, permissions, grantResults);
+                if (mPermissionListener != null && mPermissionListener.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+                    mPermissionListener = null;
+                }
+            }
+        });
     }
 
     public String getCurrentlyVisibleScreenId() {
