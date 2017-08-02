@@ -68,7 +68,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             activityParams = NavigationCommandsHandler.parseActivityParams(getIntent());
         } else {
             if (NavigationApplication.instance.isReactContextInitialized()) {
-                getReactGateway().onDestroyApp(this);
+                getReactGateway().onDestroyApp();
                 NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
             }
             NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
@@ -88,7 +88,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         switch (level) {
             case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:
                 destroyLayouts();
-                getReactGateway().onDestroyApp(this);
+                getReactGateway().onDestroyApp();
                 NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
                 Log.w("ReactNativeNavigation", "Cleaned up activity");
                 break;
@@ -185,7 +185,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.onPause();
         currentActivity = null;
         IntentDataHandler.onPause(getIntent());
-        getReactGateway().onPauseActivity(this);
+        getReactGateway().onPauseActivity();
         NavigationApplication.instance.getActivityCallbacks().onActivityPaused(this);
         EventBus.instance.unregister(this);
     }
@@ -216,7 +216,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     private void destroyJsIfNeeded() {
         if ((currentActivity == null || currentActivity.isFinishing()) && !NavigationApplication.instance.isRestartingApp()) {
-            getReactGateway().onDestroyApp(this);
+            getReactGateway().onDestroyApp();
         } else if (NavigationApplication.instance.isRestartingApp()) {
             NavigationApplication.instance.setRestartingApp(false);
         }

@@ -26,9 +26,9 @@ public interface ReactGateway {
 
     void onResumeActivity(Activity activity, DefaultHardwareBackBtnHandler defaultHardwareBackBtnHandler);
 
-    void onPauseActivity(Activity activity);
+    void onPauseActivity();
 
-    void onDestroyApp(Activity activity);
+    void onDestroyApp();
 
     void onBackPressed();
 

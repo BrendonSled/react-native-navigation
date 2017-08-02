@@ -90,7 +90,7 @@ public class LightBox extends Dialog implements DialogInterface.OnDismissListene
 
     @Override
     public void show() {
-        NavigationApplication.instance.getEventEmitter().sendWillAppearEvent( params, NavigationType.LightBox);
+        NavigationApplication.instance.getEventEmitter().sendWillAppearEvent(params, NavigationType.LightBox);
         super.show();
         NavigationApplication.instance.getEventEmitter().sendDidAppearEvent(params, NavigationType.LightBox);
     }
