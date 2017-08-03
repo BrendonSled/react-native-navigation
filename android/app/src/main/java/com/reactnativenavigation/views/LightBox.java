@@ -113,9 +113,9 @@ public class LightBox extends Dialog implements DialogInterface.OnDismissListene
     }
 
     public void destroy() {
+        NavigationApplication.instance.getEventEmitter().sendDidDisappearEvent(params, NavigationType.LightBox);
         content.unmountReactView();
         dismiss();
-        NavigationApplication.instance.getEventEmitter().sendDidDisappearEvent(params, NavigationType.LightBox);
     }
 
     private void animateShow() {
