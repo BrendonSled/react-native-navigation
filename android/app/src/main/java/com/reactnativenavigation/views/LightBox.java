@@ -28,16 +28,16 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class LightBox extends Dialog implements DialogInterface.OnDismissListener {
 
+    private final LightBoxParams params;
     private Runnable onDismissListener;
     private ContentView content;
     private RelativeLayout lightBox;
-    private LightBoxParams params;
 
     public LightBox(AppCompatActivity activity, Runnable onDismissListener, LightBoxParams params) {
         super(activity, R.style.LightBox);
         this.onDismissListener = onDismissListener;
-        this.params = params;
         setOnDismissListener(this);
+        this.params = params;
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         createContent(activity, params);
         setCancelable(!params.overrideBackPress);
@@ -101,14 +101,19 @@ public class LightBox extends Dialog implements DialogInterface.OnDismissListene
         animateHide();
     }
 
+    @Override public void onBackPressed() {
+        if (!params.overrideBackPress) {
+            hide();
+        }
+    }
+
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         onDismissListener.run();
     }
 
     public void destroy() {
-        // TODO: Resolve
-        //content.unmountReactView();
+        content.unmountReactView();
         dismiss();
         NavigationApplication.instance.getEventEmitter().sendDidDisappearEvent(params, NavigationType.LightBox);
     }
