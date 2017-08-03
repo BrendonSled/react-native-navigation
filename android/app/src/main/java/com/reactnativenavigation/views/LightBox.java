@@ -50,10 +50,10 @@ public class LightBox extends Dialog implements DialogInterface.OnDismissListene
 
     private void createContent(final Context context, final LightBoxParams params) {
         lightBox = new RelativeLayout(context);
+        lightBox.setId(ViewUtils.generateViewId());
         lightBox.setAlpha(0);
         content = new ContentView(context, params.screenId, params.navigationParams);
         content.setAlpha(0);
-        content.setId(ViewUtils.generateViewId());
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT, content.getId());
         lightBox.setBackgroundColor(params.backgroundColor.getColor());
