@@ -7,16 +7,13 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.reactnativenavigation.bridge.NavigationReactEventEmitter;
+import com.reactnativenavigation.controllers.NavigationActivity;
 
 public interface ReactGateway {
 
     void startReactContextOnceInBackgroundAndExecuteJS();
 
-    void restartReactContextOnceInBackgroundAndExecuteJS();
-
     boolean isInitialized();
-
-    boolean hasBoundActivity();
 
     ReactContext getReactContext();
 
@@ -26,15 +23,13 @@ public interface ReactGateway {
 
     void onResumeActivity(Activity activity, DefaultHardwareBackBtnHandler defaultHardwareBackBtnHandler);
 
-    void onPauseActivity();
+    void onPauseActivity(NavigationActivity navigationActivity);
 
-    void onDestroyApp();
+    void onDestroyApp(NavigationActivity navigationActivity);
 
     void onBackPressed();
 
     void onActivityResult(int requestCode, int resultCode, Intent data);
-
-    boolean hasStartedCreatingContext();
 
     void onNewIntent(Intent intent);
 
