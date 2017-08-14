@@ -1,8 +1,10 @@
 package com.reactnativenavigation.controllers;
 
 import android.annotation.TargetApi;
-import android.content.ComponentCallbacks2;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -60,51 +62,41 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     private Layout layout;
     @Nullable
     private PermissionListener mPermissionListener;
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            destroyLayouts();
+
+            activityParams = NavigationCommandsHandler.parseActivityParams(intent);
+            createModalController();
+            setOrientation();
+            createLayout();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (NavigationCommandsHandler.canParseActivityParams(getIntent())) {
-            activityParams = NavigationCommandsHandler.parseActivityParams(getIntent());
+
+        if (getReactGateway().isInitialized()) {
+            destroyLayouts();
+            getReactGateway().restartReactContextOnceInBackgroundAndExecuteJS();
         } else {
-            if (NavigationApplication.instance.isReactContextInitialized()) {
-                getReactGateway().onDestroyApp();
-                NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
-            }
-            NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
-            return;
+            getReactGateway().startReactContextOnceInBackgroundAndExecuteJS();
         }
-        disableActivityShowAnimationIfNeeded();
-        setOrientation();
-        createModalController();
-        createLayout();
+
+        registerReceiver(receiver, new IntentFilter("com.reactnativenavigation.START_APP"));
 
         NavigationApplication.instance.getActivityCallbacks().onActivityCreated(this, savedInstanceState);
-    }
 
-    @Override
-    public void onTrimMemory(int level) {
-        super.onTrimMemory(level);
-        switch (level) {
-            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE:
-                destroyLayouts();
-                getReactGateway().onDestroyApp();
-                NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
-                Log.w("ReactNativeNavigation", "Cleaned up activity");
-                break;
+        int splashLayout = getIntent().getIntExtra("SplashLayout", 0);
+        if (splashLayout != 0) {
+            setContentView(splashLayout);
         }
-
-        Log.w("ReactNativeNavigation", "Memory level: " + level);
     }
 
     private void setOrientation() {
         OrientationHelper.setOrientation(this, AppStyle.appStyle.orientation);
-    }
-
-    private void disableActivityShowAnimationIfNeeded() {
-        if (!activityParams.animateShow) {
-            overridePendingTransition(0, 0);
-        }
     }
 
     private void createModalController() {
@@ -129,27 +121,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.onStart();
         NavigationApplication.instance.getActivityCallbacks().onActivityStarted(this);
 
-        runCodeWhenReactContextInitialized(new Runnable() {
-            @Override
-            public void run() {
-                Log.w("ReactNative", "Ran start");
-                NavigationApplication.instance.setRestartingApp(false);
-            }
-        });
-
-        if (!NavigationApplication.instance.isReactContextInitialized() && !NavigationApplication.instance.getReactGateway().hasStartedCreatingContext()) {
-            NavigationApplication.instance.startReactContextOnceInBackgroundAndExecuteJS();
-        }
-    }
-
-    private void runCodeWhenReactContextInitialized(Runnable runnable) {
-        if (!NavigationApplication.instance.isReactContextInitialized()) {
-            Log.w("ReactNative", "Starting up react");
-            NavigationApplication.instance.addRunAfterReactContextInitialized(runnable);
-        } else {
-            Log.w("ReactNative", "React running");
-            runnable.run();
-        }
+        Log.w("ReactNative", "Ran start");
     }
 
     @Override
@@ -160,17 +132,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         }
 
         currentActivity = this;
-        runCodeWhenReactContextInitialized(new Runnable() {
-            @Override
-            public void run() {
-                Log.w("ReactNative", "Ran resume");
-                IntentDataHandler.onResume(getIntent());
-                getReactGateway().onResumeActivity(NavigationActivity.this, NavigationActivity.this);
-                NavigationApplication.instance.getActivityCallbacks().onActivityResumed(NavigationActivity.this);
-                EventBus.instance.register(NavigationActivity.this);
-                IntentDataHandler.onPostResume(getIntent());
-            }
-        });
+        Log.w("ReactNative", "Ran resume");
+        getReactGateway().onResumeActivity(NavigationActivity.this, NavigationActivity.this);
+        NavigationApplication.instance.getActivityCallbacks().onActivityResumed(NavigationActivity.this);
+        EventBus.instance.register(NavigationActivity.this);
     }
 
     @Override
@@ -184,8 +149,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onPause() {
         super.onPause();
         currentActivity = null;
-        IntentDataHandler.onPause(getIntent());
-        getReactGateway().onPauseActivity();
+        getReactGateway().onPauseActivity(this);
         NavigationApplication.instance.getActivityCallbacks().onActivityPaused(this);
         EventBus.instance.unregister(this);
     }
@@ -199,8 +163,9 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     @Override
     protected void onDestroy() {
         destroyLayouts();
-        destroyJsIfNeeded();
+        getReactGateway().onDestroyApp(this);
         NavigationApplication.instance.getActivityCallbacks().onActivityDestroyed(this);
+        unregisterReceiver(receiver);
         super.onDestroy();
     }
 
@@ -211,14 +176,6 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         if (layout != null) {
             layout.destroy();
             layout = null;
-        }
-    }
-
-    private void destroyJsIfNeeded() {
-        if ((currentActivity == null || currentActivity.isFinishing()) && !NavigationApplication.instance.isRestartingApp()) {
-            getReactGateway().onDestroyApp();
-        } else if (NavigationApplication.instance.isRestartingApp()) {
-            NavigationApplication.instance.setRestartingApp(false);
         }
     }
 
@@ -476,8 +433,12 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         NavigationApplication.instance.runOnMainThread(new Runnable() {
             @Override
             public void run() {
-                layout.destroy();
-                modalController.destroy();
+                if (layout != null) {
+                    layout.destroy();
+                }
+                if (modalController != null) {
+                    modalController.destroy();
+                }
             }
         });
     }
@@ -490,15 +451,10 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     @Override
     public void onRequestPermissionsResult(final int requestCode, final @NonNull String[] permissions, final @NonNull int[] grantResults) {
-        runCodeWhenReactContextInitialized(new Runnable() {
-            @Override
-            public void run() {
-                NavigationApplication.instance.getActivityCallbacks().onRequestPermissionsResult(requestCode, permissions, grantResults);
-                if (mPermissionListener != null && mPermissionListener.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
-                    mPermissionListener = null;
-                }
-            }
-        });
+        NavigationApplication.instance.getActivityCallbacks().onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (mPermissionListener != null && mPermissionListener.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            mPermissionListener = null;
+        }
     }
 
     public String getCurrentlyVisibleScreenId() {

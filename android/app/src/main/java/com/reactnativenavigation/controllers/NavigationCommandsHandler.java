@@ -32,10 +32,6 @@ public class NavigationCommandsHandler {
         return ActivityParamsParser.parse(intent.getBundleExtra(NavigationCommandsHandler.ACTIVITY_PARAMS_BUNDLE));
     }
 
-    static boolean canParseActivityParams(Intent intent) {
-        return intent.hasExtra(NavigationCommandsHandler.ACTIVITY_PARAMS_BUNDLE);
-    }
-
     /**
      * start a new activity with CLEAR_TASK | NEW_TASK
      *
@@ -43,12 +39,10 @@ public class NavigationCommandsHandler {
      */
 
     public static void startApp(Bundle params) {
-        Intent intent = new Intent(NavigationApplication.instance, NavigationActivity.class);
-        IntentDataHandler.onStartApp(intent);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent intent = new Intent();
         intent.putExtra(ACTIVITY_PARAMS_BUNDLE, params);
         intent.putExtra("animationType", params.getString("animationType"));
-        NavigationApplication.instance.setRestartingApp(true);
+        intent.setAction("com.reactnativenavigation.START_APP");
         NavigationApplication.instance.startActivity(intent);
     }
 
@@ -546,6 +540,10 @@ public class NavigationCommandsHandler {
     public static void isAppLaunched(Promise promise) {
         final boolean isAppLaunched = SplashActivity.isResumed || NavigationActivity.currentActivity != null;
         promise.resolve(isAppLaunched);
+    }
+
+    public static void isRootLaunched(Promise promise) {
+        promise.resolve(NavigationActivity.currentActivity != null);
     }
 
     public static void getCurrentlyVisibleScreenId(final Promise promise) {

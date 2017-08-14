@@ -690,6 +690,10 @@ async function isAppLaunched() {
   return await newPlatformSpecific.isAppLaunched();
 }
 
+async function isRootLaunched() {
+  return await newPlatformSpecific.isRootLaunched();
+}
+
 async function getCurrentlyVisibleScreenId() {
   return await newPlatformSpecific.getCurrentlyVisibleScreenId();
 }
@@ -725,5 +729,6 @@ export default {
   showContextualMenu,
   dismissContextualMenu,
   isAppLaunched,
+  isRootLaunched,
   getCurrentlyVisibleScreenId
 };

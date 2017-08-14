@@ -7,12 +7,12 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.ReactContext;
-import com.facebook.react.common.LifecycleState;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.shell.MainReactPackage;
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.bridge.NavigationReactEventEmitter;
 import com.reactnativenavigation.bridge.NavigationReactPackage;
+import com.reactnativenavigation.controllers.NavigationActivity;
 import com.reactnativenavigation.events.EventBus;
 import com.reactnativenavigation.events.JsDevReloadEvent;
 
@@ -46,16 +46,6 @@ public class NavigationReactGateway implements ReactGateway {
         return host.hasInstance() && getReactInstanceManager().getCurrentReactContext() != null;
     }
 
-    @Override
-    public boolean hasBoundActivity() {
-        return getReactInstanceManager().getLifecycleState() != LifecycleState.BEFORE_CREATE;
-    }
-
-    @Override
-    public boolean hasStartedCreatingContext() {
-        return getReactInstanceManager().hasStartedCreatingInitialContext();
-    }
-
     public ReactContext getReactContext() {
         return getReactInstanceManager().getCurrentReactContext();
     }
@@ -73,13 +63,13 @@ public class NavigationReactGateway implements ReactGateway {
         getReactInstanceManager().onBackPressed();
     }
 
-    public void onDestroyApp() {
-        getReactInstanceManager().onHostDestroy();
+    public void onDestroyApp(NavigationActivity navigationActivity) {
+        getReactInstanceManager().onHostDestroy(navigationActivity);
         host.clear();
     }
 
-    public void onPauseActivity() {
-        getReactInstanceManager().onHostPause();
+    public void onPauseActivity(NavigationActivity navigationActivity) {
+        getReactInstanceManager().onHostPause(navigationActivity);
         jsDevReloadHandler.onPauseActivity();
     }
 
@@ -172,7 +162,6 @@ public class NavigationReactGateway implements ReactGateway {
         @Override
         public void onReactContextInitialized(ReactContext context) {
             ((NavigationReactGateway) NavigationApplication.instance.getReactGateway()).onReactContextInitialized();
-            NavigationApplication.instance.onReactInitialized(context);
         }
 
         @Override
