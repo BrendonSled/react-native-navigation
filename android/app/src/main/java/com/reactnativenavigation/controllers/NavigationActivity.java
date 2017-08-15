@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -79,21 +80,28 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getReactGateway().isInitialized()) {
-            destroyLayouts();
-            getReactGateway().restartReactContextOnceInBackgroundAndExecuteJS();
-        } else {
-            getReactGateway().startReactContextOnceInBackgroundAndExecuteJS();
+        if (isTaskRoot() || !getReactGateway().isInitialized()) {
+            if (getReactGateway().isInitialized()) {
+                destroyLayouts();
+                getReactGateway().restartReactContextOnceInBackgroundAndExecuteJS();
+            } else {
+                getReactGateway().startReactContextOnceInBackgroundAndExecuteJS();
+            }
+
+            registerReceiver(receiver, new IntentFilter("com.reactnativenavigation.START_APP"));
+
+            NavigationApplication.instance.getActivityCallbacks().onActivityCreated(this, savedInstanceState);
+
+            int splashLayout = getSplashLayout();
+            if (splashLayout != 0) {
+                setContentView(splashLayout);
+            }
         }
+    }
 
-        registerReceiver(receiver, new IntentFilter("com.reactnativenavigation.START_APP"));
-
-        NavigationApplication.instance.getActivityCallbacks().onActivityCreated(this, savedInstanceState);
-
-        int splashLayout = getIntent().getIntExtra("SplashLayout", 0);
-        if (splashLayout != 0) {
-            setContentView(splashLayout);
-        }
+    @LayoutRes
+    public int getSplashLayout() {
+        return 0;
     }
 
     private void setOrientation() {
