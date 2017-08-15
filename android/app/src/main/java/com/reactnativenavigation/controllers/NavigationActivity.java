@@ -59,6 +59,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
 
     private ActivityParams activityParams;
     private ModalController modalController;
+    private boolean isPaused = true;
     private Layout layout;
     @Nullable
     private PermissionListener mPermissionListener;
@@ -104,6 +105,9 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     }
 
     private void createLayout() {
+        if (!isPaused) {
+            currentActivity = this;
+        }
         layout = LayoutFactory.create(this, activityParams);
         if (hasBackgroundColor()) {
             layout.asView().setBackgroundColor(AppStyle.appStyle.screenBackgroundColor.getColor());
@@ -131,7 +135,11 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
             return;
         }
 
-        currentActivity = this;
+        isPaused = false;
+
+        if (layout != null) {
+            currentActivity = this;
+        }
         Log.w("ReactNative", "Ran resume");
         getReactGateway().onResumeActivity(NavigationActivity.this, NavigationActivity.this);
         NavigationApplication.instance.getActivityCallbacks().onActivityResumed(NavigationActivity.this);
@@ -148,6 +156,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     @Override
     protected void onPause() {
         super.onPause();
+        isPaused = true;
         currentActivity = null;
         getReactGateway().onPauseActivity(this);
         NavigationApplication.instance.getActivityCallbacks().onActivityPaused(this);
