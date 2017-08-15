@@ -80,7 +80,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (isTaskRoot() || !getReactGateway().isInitialized()) {
+        if (isTaskRoot() || layout == null || !getReactGateway().isInitialized()) {
             if (getReactGateway().isInitialized()) {
                 destroyLayouts();
                 getReactGateway().restartReactContextOnceInBackgroundAndExecuteJS();
