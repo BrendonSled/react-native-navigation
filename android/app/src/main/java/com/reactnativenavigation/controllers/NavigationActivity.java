@@ -166,7 +166,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
         super.onPause();
         isPaused = true;
         currentActivity = null;
-        getReactGateway().onPauseActivity(this);
+        getReactGateway().onPauseActivity();
         NavigationApplication.instance.getActivityCallbacks().onActivityPaused(this);
         EventBus.instance.unregister(this);
     }

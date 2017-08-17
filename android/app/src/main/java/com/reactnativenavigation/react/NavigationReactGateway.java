@@ -68,8 +68,8 @@ public class NavigationReactGateway implements ReactGateway {
         host.clear();
     }
 
-    public void onPauseActivity(NavigationActivity navigationActivity) {
-        getReactInstanceManager().onHostPause(navigationActivity);
+    public void onPauseActivity() {
+        getReactInstanceManager().onHostPause();
         jsDevReloadHandler.onPauseActivity();
     }
 

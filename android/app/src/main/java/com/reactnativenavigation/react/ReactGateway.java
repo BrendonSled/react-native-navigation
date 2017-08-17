@@ -25,7 +25,7 @@ public interface ReactGateway {
 
     void onResumeActivity(Activity activity, DefaultHardwareBackBtnHandler defaultHardwareBackBtnHandler);
 
-    void onPauseActivity(NavigationActivity navigationActivity);
+    void onPauseActivity();
 
     void onDestroyApp(NavigationActivity navigationActivity);
 
