@@ -63,9 +63,10 @@ public class TopBar extends AppBarLayout {
     public void addTitleBarAndSetButtons(List<TitleBarButtonParams> rightButtons,
                                          TitleBarLeftButtonParams leftButton,
                                          LeftButtonOnClickListener leftButtonOnClickListener,
-                                         String navigatorEventId, boolean overrideBackPressInJs) {
+                                         String navigatorEventId, boolean overrideBackPressInJs,
+                                         StyleParams styleParams) {
         titleBar = createTitleBar();
-        addTitleBar();
+        addTitleBar(styleParams);
         addButtons(rightButtons, leftButton, leftButtonOnClickListener, navigatorEventId, overrideBackPressInJs);
     }
 
@@ -73,8 +74,14 @@ public class TopBar extends AppBarLayout {
         return new TitleBar(getContext());
     }
 
-    protected void addTitleBar() {
-        titleBarAndContextualMenuContainer.addView(titleBar, new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+    protected void addTitleBar(StyleParams styleParams) {
+        final int titleBarHeight = styleParams.titleBarHeight > 0
+            ? (int) ViewUtils.convertDpToPixel(styleParams.titleBarHeight)
+            : MATCH_PARENT;
+
+        ViewGroup.LayoutParams lp = new ViewGroup.LayoutParams(MATCH_PARENT, titleBarHeight);
+
+        titleBarAndContextualMenuContainer.addView(titleBar, lp);
     }
 
     private void addButtons(List<TitleBarButtonParams> rightButtons, TitleBarLeftButtonParams leftButton, LeftButtonOnClickListener leftButtonOnClickListener, String navigatorEventId, boolean overrideBackPressInJs) {
@@ -148,7 +155,9 @@ public class TopBar extends AppBarLayout {
     }
 
     public void setStyle(StyleParams styleParams) {
-        if (styleParams.topBarColor.hasColor()) {
+        if (styleParams.topBarBorderColor.hasColor()) {
+            setBackground(new TopBarBorder(styleParams));
+        } else if (styleParams.topBarColor.hasColor()) {
             setBackgroundColor(styleParams.topBarColor.getColor());
         }
         if (styleParams.topBarTransparent) {
@@ -177,9 +186,14 @@ public class TopBar extends AppBarLayout {
         titleBar.setRightButtons(titleBarButtons, navigatorEventId);
     }
 
-    public TopTabs initTabs() {
+    public TopTabs initTabs(StyleParams styleParams) {
         topTabs = new TopTabs(getContext());
-        addView(topTabs, new ViewGroup.LayoutParams(MATCH_PARENT, (int) ViewUtils.convertDpToPixel(48)));
+
+        final int topTabsHeight = styleParams.topTabsHeight > 0
+            ? (int) ViewUtils.convertDpToPixel(styleParams.topTabsHeight)
+            : MATCH_PARENT;
+
+        addView(topTabs, new ViewGroup.LayoutParams(MATCH_PARENT, topTabsHeight));
         return topTabs;
     }
 

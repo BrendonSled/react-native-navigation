@@ -5,4 +5,5 @@ public class LightBoxParams extends BaseScreenParams {
     public boolean tapBackgroundToDismiss;
     public boolean requiresFullScreen;
     public boolean overrideBackPress;
+    public int adjustSoftInput;
 }
